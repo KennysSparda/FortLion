@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from database import create_connection, add_product, get_products, update_product
+from model.database import create_connection, add_product, get_products, update_product
 
 class ProductFrame(tk.Frame):
     def __init__(self, master=None):
@@ -48,10 +48,9 @@ class ProductFrame(tk.Frame):
         self.tree.heading("Validade", text="Validade", command=lambda: self.sort_column("Validade", False))
         
         self.tree.pack(pady=20)
-        
+
         self.tree.bind("<ButtonRelease-1>", self.select_product)
-        self.bind_all("<1>", self.clear_entries_on_click_outside)
-        
+      
     def select_product(self, event):
         selected_item = self.tree.focus()
         if selected_item:
@@ -70,10 +69,21 @@ class ProductFrame(tk.Frame):
         
     def add_product(self):
         nome = self.nome_entry.get()
-        valor_pago = float(self.valor_pago_entry.get())
-        valor_venda = float(self.valor_venda_entry.get())
+        valor_pago_str = self.valor_pago_entry.get()
+        valor_venda_str = self.valor_venda_entry.get()
         data_entrada = self.data_entrada_entry.get()
         validade = self.validade_entry.get()
+        
+        if not nome or not valor_pago_str or not valor_venda_str:
+            messagebox.showwarning("Campos Vazios", "Preencha todos os campos obrigatórios.")
+            return
+        
+        try:
+            valor_pago = float(valor_pago_str)
+            valor_venda = float(valor_venda_str)
+        except ValueError:
+            messagebox.showerror("Erro de Valor", "Valor Pago e Valor Venda devem ser números válidos.")
+            return
         
         add_product(nome, valor_pago, valor_venda, data_entrada, validade)
         self.load_products()
@@ -134,11 +144,6 @@ class ProductFrame(tk.Frame):
         self.valor_venda_entry.delete(0, tk.END)
         self.data_entrada_entry.delete(0, tk.END)
         self.validade_entry.delete(0, tk.END)
-
-    def clear_entries_on_click_outside(self, event):
-        widget = event.widget
-        if widget != self.nome_entry and widget != self.valor_pago_entry and widget != self.valor_venda_entry and widget != self.data_entrada_entry and widget != self.validade_entry:
-            self.clear_entries()
 
 if __name__ == "__main__":
     root = tk.Tk()
